@@ -1,8 +1,11 @@
+server:
+  port: ${PORT:8080}
+
 spring:
   application:
     name: schemesathi-backend
   datasource:
-    url: ${SPRING_DATASOURCE_URL:jdbc:h2:mem:schemesathi;DB_CLOSE_DELAY=-1;MODE=MySQL;NON_KEYWORDS=USER}
+    url: ${SPRING_DATASOURCE_URL:jdbc:h2:mem:schemesathi;DB_CLOSE_DELAY=-1}
     username: ${SPRING_DATASOURCE_USERNAME:sa}
     password: ${SPRING_DATASOURCE_PASSWORD:}
     driver-class-name: ${SPRING_DATASOURCE_DRIVER:org.h2.Driver}

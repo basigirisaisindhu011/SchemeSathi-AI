@@ -39,7 +39,7 @@
             <artifactId>spring-boot-starter-validation</artifactId>
         </dependency>
 
-        <!-- PostgreSQL Driver for Production & Render Deployment -->
+        <!-- PostgreSQL Driver for Production & Render Deployment (Neon DB) -->
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>

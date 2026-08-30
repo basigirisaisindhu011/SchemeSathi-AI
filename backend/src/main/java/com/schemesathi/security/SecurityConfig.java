@@ -70,9 +70,24 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:5173", "http://localhost:3000")); // standard React dev ports
+        
+        List<String> allowedOrigins = new java.util.ArrayList<>(List.of(
+            "http://localhost:5173",
+            "http://localhost:3000",
+            "http://127.0.0.1:5173"
+        ));
+        
+        String frontendUrl = System.getenv("FRONTEND_URL");
+        if (frontendUrl != null && !frontendUrl.isBlank()) {
+            String trimmed = frontendUrl.trim().replaceAll("/+$", "");
+            if (!allowedOrigins.contains(trimmed)) {
+                allowedOrigins.add(trimmed);
+            }
+        }
+        
+        configuration.setAllowedOrigins(allowedOrigins);
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "Cache-Control"));
+        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "Cache-Control", "X-Requested-With"));
         configuration.setExposedHeaders(List.of("Authorization"));
         configuration.setAllowCredentials(true);
 

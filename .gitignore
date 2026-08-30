@@ -1,0 +1,24 @@
+# Environments & Secrets
+.env
+.env.*
+!.env.example
+application-secrets.yml
+*.pem
+*.key
+
+# Backend build outputs
+backend/target/
+target/
+
+# Frontend build outputs & dependencies
+frontend/dist/
+dist/
+node_modules/
+frontend/node_modules/
+.dist/
+
+# System & IDE files
+.DS_Store
+*.log
+.idea/
+.vscode/
