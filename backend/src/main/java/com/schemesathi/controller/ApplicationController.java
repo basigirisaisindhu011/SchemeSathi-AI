@@ -87,6 +87,31 @@ public class ApplicationController {
         }).orElse(ResponseEntity.notFound().build());
     }
 
+    @PutMapping("/update-tracker/{id}")
+    public ResponseEntity<?> updateMyTracker(@PathVariable Long id, @RequestBody Map<String, Object> body, Principal principal) {
+        if (principal == null) {
+            return ResponseEntity.status(401).body(Map.of("message", "Unauthorized"));
+        }
+        User user = userRepository.findByEmail(principal.getName()).orElseThrow();
+        
+        return applicationRepository.findById(id).map(app -> {
+            if (!app.getUser().getId().equals(user.getId())) {
+                return ResponseEntity.status(403).body(Map.of("message", "Access denied"));
+            }
+            if (body.containsKey("referenceNumber")) {
+                app.setReferenceNumber(body.get("referenceNumber") != null ? body.get("referenceNumber").toString() : null);
+            }
+            if (body.containsKey("status")) {
+                app.setStatus(body.get("status").toString());
+            }
+            if (body.containsKey("remarks")) {
+                app.setRemarks(body.get("remarks") != null ? body.get("remarks").toString() : null);
+            }
+            applicationRepository.save(app);
+            return ResponseEntity.ok(Map.of("message", "Tracker updated successfully", "application", mapToApplicationMap(app)));
+        }).orElse(ResponseEntity.notFound().build());
+    }
+
     private Map<String, Object> mapToApplicationMap(Application app) {
         Map<String, Object> map = new HashMap<>();
         map.put("id", app.getId());
@@ -96,6 +121,7 @@ public class ApplicationController {
         map.put("applicantName", app.getUser().getFullName());
         map.put("applicantEmail", app.getUser().getEmail());
         map.put("status", app.getStatus());
+        map.put("referenceNumber", app.getReferenceNumber());
         map.put("remarks", app.getRemarks());
         map.put("appliedDate", app.getAppliedDate());
         map.put("lastUpdated", app.getLastUpdated());

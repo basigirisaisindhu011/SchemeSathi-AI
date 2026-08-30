@@ -26,7 +26,7 @@ export const translations = {
     navSchemes: "All Schemes",
     navRecommendations: "AI Matches",
     navApplications: "Track Applications",
-    navDocuments: "Document Verification",
+    navDocuments: "Document Checklist",
     navAdmin: "Admin Portal",
     navChatbot: "AI Assistant",
     login: "Sign In",
@@ -117,7 +117,17 @@ export const translations = {
     tabAiMatches: "AI Matches",
     tabAllSchemes: "All Schemes",
     tabAppTracker: "Application Tracker",
-    tabDocVault: "Document Vault",
+    tabDocVault: "Document Checklist",
+
+    // Scheme Browsing & Redesign
+    exploreHeaderTitle: "Explore Government Schemes",
+    exploreHeaderSubtitle: "Discover verified Central & State welfare initiatives, instant AI eligibility estimates, and personalized document readiness checking.",
+    chipScholarships: "Scholarships",
+    chipPension: "Pension",
+    sortByBestMatch: "Best Match %",
+    sortByReadiness: "Application Readiness %",
+    govTypeCentral: "Central Government",
+    govTypeState: "State Government",
 
     // Tracker & Vault
     appLifecycleTracker: "Application Lifecycle Tracker",

@@ -54,6 +54,9 @@ public class Scheme {
     @Column(name = "occupation_restriction", length = 100)
     private String occupationRestriction = "ALL";
 
+    @Column(name = "categories_tag", columnDefinition = "TEXT")
+    private String categoriesTag;
+
     @Column(name = "required_documents", columnDefinition = "TEXT")
     private String requiredDocuments;
 
@@ -153,6 +156,9 @@ public class Scheme {
 
     public String getOccupationRestriction() { return occupationRestriction; }
     public void setOccupationRestriction(String occupationRestriction) { this.occupationRestriction = occupationRestriction != null ? occupationRestriction : "ALL"; }
+
+    public String getCategoriesTag() { return categoriesTag; }
+    public void setCategoriesTag(String categoriesTag) { this.categoriesTag = categoriesTag; }
 
     public String getRequiredDocuments() { return requiredDocuments; }
     public void setRequiredDocuments(String requiredDocuments) { this.requiredDocuments = requiredDocuments; }

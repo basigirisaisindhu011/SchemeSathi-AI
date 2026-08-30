@@ -20,7 +20,10 @@ public class Application {
     private Scheme scheme;
 
     @Column(length = 50, nullable = false)
-    private String status = "APPLIED"; // APPLIED, SUBMITTED, UNDER_VERIFICATION, APPROVED, REJECTED, BENEFITS_RELEASED
+    private String status = "APPLIED"; // APPLIED, SUBMITTED, DOCUMENTS_SUBMITTED, UNDER_REVIEW, APPROVED, REJECTED, BENEFIT_RECEIVED
+
+    @Column(name = "reference_number", length = 100)
+    private String referenceNumber;
 
     @Column(columnDefinition = "TEXT")
     private String remarks;
@@ -67,6 +70,9 @@ public class Application {
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status != null ? status : "APPLIED"; }
 
+    public String getReferenceNumber() { return referenceNumber; }
+    public void setReferenceNumber(String referenceNumber) { this.referenceNumber = referenceNumber; }
+
     public String getRemarks() { return remarks; }
     public void setRemarks(String remarks) { this.remarks = remarks; }
 
@@ -85,6 +91,7 @@ public class Application {
         private User user;
         private Scheme scheme;
         private String status = "APPLIED";
+        private String referenceNumber;
         private String remarks;
         private LocalDateTime appliedDate;
         private LocalDateTime lastUpdated;
@@ -93,12 +100,15 @@ public class Application {
         public ApplicationBuilder user(User user) { this.user = user; return this; }
         public ApplicationBuilder scheme(Scheme scheme) { this.scheme = scheme; return this; }
         public ApplicationBuilder status(String status) { this.status = status; return this; }
+        public ApplicationBuilder referenceNumber(String referenceNumber) { this.referenceNumber = referenceNumber; return this; }
         public ApplicationBuilder remarks(String remarks) { this.remarks = remarks; return this; }
         public ApplicationBuilder appliedDate(LocalDateTime appliedDate) { this.appliedDate = appliedDate; return this; }
         public ApplicationBuilder lastUpdated(LocalDateTime lastUpdated) { this.lastUpdated = lastUpdated; return this; }
 
         public Application build() {
-            return new Application(id, user, scheme, status, remarks, appliedDate, lastUpdated);
+            Application app = new Application(id, user, scheme, status, remarks, appliedDate, lastUpdated);
+            app.setReferenceNumber(referenceNumber);
+            return app;
         }
     }
 }

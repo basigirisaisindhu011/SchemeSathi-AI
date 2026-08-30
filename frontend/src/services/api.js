@@ -114,6 +114,10 @@ export const applicationService = {
     const res = await api.put(`/api/applications/admin/${id}/status`, { status, remarks });
     return res.data;
   },
+  updateTracker: async (id, trackerData) => {
+    const res = await api.put(`/api/applications/update-tracker/${id}`, trackerData);
+    return res.data;
+  },
 };
 
 export const ocrService = {

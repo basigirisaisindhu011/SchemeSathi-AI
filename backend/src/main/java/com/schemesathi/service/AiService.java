@@ -154,7 +154,7 @@ public class AiService {
         try {
             docContentText = extractTextFromPdf(fileBytes);
         } catch (Exception e) {
-            docContentText = "Aadhaar Card: " + user.getFullName() + ", Mobile: " + user.getMobileNumber() + ", UID: XXXX-XXXX-1234. DOB: 01/01/2000.";
+            docContentText = "";
         }
 
         if (geminiApiKey == null || geminiApiKey.startsWith("mock_key") || geminiApiKey.trim().isEmpty()) {
@@ -163,21 +163,25 @@ public class AiService {
 
         try {
             String promptText = """
-                You are an OCR and identity validation expert. Analyze the extracted text of the document named: %s.
-                Verify if it matches the profile of citizen: %s.
-                
-                Extracted Text:
+                You are an OCR and document validation assistant. Analyze the document named: %s.
+                Compare it against the profile of citizen: %s (Age: %d, Income: %s).
+                Extracted Raw Text:
                 %s
-                
+
                 Respond strictly with a JSON object containing:
-                - "status" (string: "VERIFIED" or "REJECTED")
-                - "extractedName" (string, name found in doc)
-                - "extractedIdNumber" (string, certificate/Aadhaar/Identity number found in doc)
-                - "mismatchDetails" (string, explaining if there is a mismatch with user's name/profile, otherwise empty)
-                - "verificationNotes" (string, summary of what was matched)
-                
+                - "status" (string: "VERIFIED", "NEEDS_REVIEW", or "REJECTED")
+                - "extractedName" (string, name found in doc or "Not Found")
+                - "extractedDob" (string, date of birth found or "N/A")
+                - "extractedIncome" (string, income amount found or "N/A")
+                - "certificateType" (string, document type recognized)
+                - "issuingAuthority" (string, department/authority recognized or "Government Authority")
+                - "extractedIdNumber" (string, certificate/Aadhaar/Identity number found or "N/A")
+                - "mismatchDetails" (string, details of any mismatch)
+                - "verificationNotes" (string, AI-Assisted Document Verification summary)
+
                 Do not include markdown wrappers or conversation. Only return the JSON.
-                """.formatted(documentName, user.getFullName() + " (Age: " + user.getAge() + ")", docContentText);
+                """.formatted(documentName, user.getFullName(), user.getAge() != null ? user.getAge() : 0, 
+                              user.getAnnualIncome() != null ? user.getAnnualIncome().toString() : "0", docContentText);
 
             String responseText = chatModel.call(promptText);
             responseText = cleanJsonResponse(responseText);
@@ -331,11 +335,15 @@ public class AiService {
 
     private Map<String, Object> fallbackOcrVerification(String docName, String docText, User user) {
         Map<String, Object> res = new HashMap<>();
-        res.put("status", "VERIFIED");
-        res.put("extractedName", user.getFullName());
-        res.put("extractedIdNumber", "XXXX-XXXX-9876");
+        res.put("status", "NEEDS_REVIEW");
+        res.put("extractedName", user != null ? user.getFullName() : "Citizen");
+        res.put("extractedDob", "N/A");
+        res.put("extractedIncome", user != null && user.getAnnualIncome() != null ? "₹" + user.getAnnualIncome() : "N/A");
+        res.put("certificateType", docName);
+        res.put("issuingAuthority", "Government Authority / Issuer");
+        res.put("extractedIdNumber", "DOC-" + (System.currentTimeMillis() % 100000));
         res.put("mismatchDetails", "");
-        res.put("verificationNotes", "Verified fallback: Name on " + docName + " matches " + user.getFullName() + " profile details.");
+        res.put("verificationNotes", "AI-Assisted Document Verification: Gemini OCR engine offline. Document stored safely and flagged for review.");
         return res;
     }
 }

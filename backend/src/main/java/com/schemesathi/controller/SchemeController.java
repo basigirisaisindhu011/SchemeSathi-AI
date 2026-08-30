@@ -175,6 +175,18 @@ public class SchemeController {
         map.put("districtName", s.getDistrict() != null ? s.getDistrict().getName() : null);
         map.put("categoryId", s.getCategory().getId());
         map.put("categoryName", s.getCategory().getName());
+        
+        List<String> categoriesList = List.of();
+        if (s.getCategoriesTag() != null && !s.getCategoriesTag().trim().isEmpty()) {
+            categoriesList = java.util.Arrays.stream(s.getCategoriesTag().split(","))
+                    .map(String::trim)
+                    .filter(str -> !str.isEmpty())
+                    .collect(java.util.stream.Collectors.toList());
+        } else if (s.getCategory() != null) {
+            categoriesList = List.of(s.getCategory().getName());
+        }
+        map.put("categories", categoriesList);
+
         map.put("description", s.getDescription());
         map.put("benefits", s.getBenefits());
         map.put("eligibility", s.getEligibility());
@@ -183,7 +195,16 @@ public class SchemeController {
         map.put("ageMax", s.getAgeMax());
         map.put("genderRestriction", s.getGenderRestriction());
         map.put("occupationRestriction", s.getOccupationRestriction());
-        map.put("requiredDocuments", s.getRequiredDocuments());
+        
+        List<String> docsList = List.of();
+        if (s.getRequiredDocuments() != null && !s.getRequiredDocuments().trim().isEmpty()) {
+            docsList = java.util.Arrays.stream(s.getRequiredDocuments().split(","))
+                    .map(String::trim)
+                    .filter(str -> !str.isEmpty())
+                    .collect(java.util.stream.Collectors.toList());
+        }
+        map.put("requiredDocuments", docsList);
+
         map.put("applicationProcess", s.getApplicationProcess());
         map.put("applicationMode", s.getApplicationMode());
         map.put("officialWebsite", s.getOfficialWebsite());
