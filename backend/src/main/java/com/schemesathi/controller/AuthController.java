@@ -60,7 +60,7 @@ public class AuthController {
         if (email.isEmpty()) {
             return ResponseEntity.badRequest().body(Map.of("message", "Email address is required."));
         }
-        if (userRepository.existsByEmail(email)) {
+        if (userRepository.existsByEmailIgnoreCase(email) || userRepository.existsByEmail(email)) {
             return ResponseEntity.badRequest().body(Map.of("message", "Email address is already in use."));
         }
 
@@ -102,7 +102,7 @@ public class AuthController {
         String jwt = tokenProvider.generateToken(authentication);
 
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-        User user = userRepository.findByEmail(userDetails.getUsername())
+        User user = userRepository.findByEmailIgnoreCase(userDetails.getUsername())
                 .orElseGet(() -> userRepository.findByEmail(email).orElseThrow());
         Set<String> roles = userDetails.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)

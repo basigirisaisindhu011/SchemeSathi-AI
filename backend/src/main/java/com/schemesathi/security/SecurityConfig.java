@@ -71,21 +71,21 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         
-        List<String> allowedOrigins = new java.util.ArrayList<>(List.of(
-            "http://localhost:5173",
-            "http://localhost:3000",
-            "http://127.0.0.1:5173"
+        List<String> allowedOriginPatterns = new java.util.ArrayList<>(List.of(
+            "http://localhost:*",
+            "http://127.0.0.1:*",
+            "https://*.vercel.app"
         ));
         
         String frontendUrl = System.getenv("FRONTEND_URL");
         if (frontendUrl != null && !frontendUrl.isBlank()) {
             String trimmed = frontendUrl.trim().replaceAll("/+$", "");
-            if (!allowedOrigins.contains(trimmed)) {
-                allowedOrigins.add(trimmed);
+            if (!allowedOriginPatterns.contains(trimmed)) {
+                allowedOriginPatterns.add(trimmed);
             }
         }
         
-        configuration.setAllowedOrigins(allowedOrigins);
+        configuration.setAllowedOriginPatterns(allowedOriginPatterns);
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "Cache-Control", "X-Requested-With"));
         configuration.setExposedHeaders(List.of("Authorization"));

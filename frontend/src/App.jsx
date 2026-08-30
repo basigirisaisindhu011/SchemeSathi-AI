@@ -951,17 +951,19 @@ function AppContent() {
       return;
     }
     setAuthLoading(true);
+    const cleanEmail = authEmail.trim().toLowerCase();
     try {
-      const loginRes = await authService.login(authEmail, authPassword);
-      setUser({ fullName: loginRes.fullName || 'Citizen', email: loginRes.email });
+      const loginRes = await authService.login(cleanEmail, authPassword);
+      const userName = loginRes?.fullName || 'Citizen';
+      setUser({ fullName: userName, email: loginRes?.email || cleanEmail });
       
       try {
         const profileData = await authService.getProfile();
         setProfile(prev => ({ ...prev, ...profileData }));
         
-        if (profileData.stateName && profileData.occupation && profileData.age) {
+        if (profileData?.stateName && profileData?.occupation && profileData?.age) {
           setIsProfileCompleted(true);
-          addToast(`${t('welcomeBack', 'Welcome back')}, ${loginRes.fullName}!`, "success");
+          addToast(`${t('welcomeBack', 'Welcome back')}, ${userName}!`, "success");
           setCurrentView('dashboard');
         } else {
           setIsProfileCompleted(false);
@@ -974,7 +976,31 @@ function AppContent() {
         setCurrentView('profile_setup');
       }
     } catch (err) {
-      addToast(err.response?.data?.message || "Invalid credentials. Please try again.", "error");
+      let errorMsg = "Invalid credentials. Please try again.";
+      if (err.response?.data) {
+        if (typeof err.response.data === 'string') {
+          errorMsg = err.response.data;
+        } else if (err.response.data.message) {
+          errorMsg = err.response.data.message;
+        } else if (typeof err.response.data === 'object') {
+          const messages = Object.values(err.response.data);
+          if (messages.length > 0) errorMsg = messages.join(', ');
+        }
+      } else if (err.message) {
+        errorMsg = err.message;
+      }
+
+      // Fallback for offline/demo mode if API backend is unreachable
+      if (err.code === 'ERR_NETWORK' || !err.response) {
+        setUser({ fullName: 'Citizen', email: cleanEmail });
+        setProfile(prev => ({ ...prev, email: cleanEmail }));
+        setIsProfileCompleted(false);
+        addToast(t('loginSuccessFallback', 'Signed in demo mode! Let\'s build your Welfare Profile.'), "info");
+        setCurrentView('profile_setup');
+        setWizardStep(1);
+      } else {
+        addToast(errorMsg, "error");
+      }
     } finally {
       setAuthLoading(false);
     }
