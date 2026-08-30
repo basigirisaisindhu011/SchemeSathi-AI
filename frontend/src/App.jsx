@@ -900,17 +900,45 @@ function AppContent() {
       return;
     }
     setAuthLoading(true);
+    const cleanEmail = authEmail.trim().toLowerCase();
+    const cleanName = authFullName.trim();
     try {
-      await authService.register(authEmail, authPassword, authFullName);
-      await authService.login(authEmail, authPassword);
-      setUser({ fullName: authFullName, email: authEmail });
-      setProfile(prev => ({ ...prev, fullName: authFullName, email: authEmail }));
+      const regRes = await authService.register(cleanEmail, authPassword, cleanName);
+      if (!regRes?.token) {
+        await authService.login(cleanEmail, authPassword);
+      }
+      setUser({ fullName: regRes?.fullName || cleanName, email: regRes?.email || cleanEmail });
+      setProfile(prev => ({ ...prev, fullName: regRes?.fullName || cleanName, email: regRes?.email || cleanEmail }));
       setIsProfileCompleted(false);
       addToast(t('registerSuccess', 'Registration successful! Let\'s build your Welfare Profile.'), "success");
       setCurrentView('profile_setup');
       setWizardStep(1);
     } catch (err) {
-      addToast(err.response?.data?.message || "Registration failed. Please try again.", "error");
+      let errorMsg = "Registration failed. Please try again.";
+      if (err.response?.data) {
+        if (typeof err.response.data === 'string') {
+          errorMsg = err.response.data;
+        } else if (err.response.data.message) {
+          errorMsg = err.response.data.message;
+        } else if (typeof err.response.data === 'object') {
+          const messages = Object.values(err.response.data);
+          if (messages.length > 0) errorMsg = messages.join(', ');
+        }
+      } else if (err.message) {
+        errorMsg = err.message;
+      }
+      
+      // Fallback for offline/demo mode if API backend is unreachable
+      if (err.code === 'ERR_NETWORK' || !err.response) {
+        setUser({ fullName: cleanName, email: cleanEmail });
+        setProfile(prev => ({ ...prev, fullName: cleanName, email: cleanEmail }));
+        setIsProfileCompleted(false);
+        addToast(t('registerSuccessFallback', 'Registered in demo mode! Let\'s build your Welfare Profile.'), "info");
+        setCurrentView('profile_setup');
+        setWizardStep(1);
+      } else {
+        addToast(errorMsg, "error");
+      }
     } finally {
       setAuthLoading(false);
     }

@@ -21,15 +21,22 @@ api.interceptors.request.use(
 
 export const authService = {
   login: async (email, password) => {
-    const res = await api.post('/api/auth/login', { email, password });
-    if (res.data.token) {
+    const cleanEmail = email ? email.trim().toLowerCase() : '';
+    const res = await api.post('/api/auth/login', { email: cleanEmail, password });
+    if (res.data && res.data.token) {
       localStorage.setItem('token', res.data.token);
       localStorage.setItem('user', JSON.stringify(res.data));
     }
     return res.data;
   },
   register: async (email, password, fullName) => {
-    const res = await api.post('/api/auth/register', { email, password, fullName });
+    const cleanEmail = email ? email.trim().toLowerCase() : '';
+    const cleanName = fullName ? fullName.trim() : '';
+    const res = await api.post('/api/auth/register', { email: cleanEmail, password, fullName: cleanName });
+    if (res.data && res.data.token) {
+      localStorage.setItem('token', res.data.token);
+      localStorage.setItem('user', JSON.stringify(res.data));
+    }
     return res.data;
   },
   logout: () => {

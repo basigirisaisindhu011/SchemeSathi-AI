@@ -54,18 +54,23 @@ public class AuthController {
     }
 
     @PostMapping("/register")
+    @org.springframework.transaction.annotation.Transactional
     public ResponseEntity<?> registerUser(@Valid @RequestBody RegisterRequest registerRequest) {
-        if (userRepository.existsByEmail(registerRequest.getEmail())) {
-            return ResponseEntity.badRequest().body(Map.of("message", "Email address already in use."));
+        String email = registerRequest.getEmail() != null ? registerRequest.getEmail().trim().toLowerCase() : "";
+        if (email.isEmpty()) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Email address is required."));
+        }
+        if (userRepository.existsByEmail(email)) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Email address is already in use."));
         }
 
         Role userRole = roleRepository.findByName("ROLE_CITIZEN")
                 .orElseGet(() -> roleRepository.save(Role.builder().name("ROLE_CITIZEN").build()));
 
         User user = User.builder()
-                .email(registerRequest.getEmail())
+                .email(email)
                 .password(passwordEncoder.encode(registerRequest.getPassword()))
-                .fullName(registerRequest.getFullName())
+                .fullName(registerRequest.getFullName() != null ? registerRequest.getFullName().trim() : "Citizen")
                 .roles(Collections.singleton(userRole))
                 .enabled(true)
                 .isFarmer(false)
@@ -85,9 +90,10 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
+        String email = loginRequest.getEmail() != null ? loginRequest.getEmail().trim().toLowerCase() : "";
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
-                        loginRequest.getEmail(),
+                        email,
                         loginRequest.getPassword()
                 )
         );
@@ -96,7 +102,8 @@ public class AuthController {
         String jwt = tokenProvider.generateToken(authentication);
 
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-        User user = userRepository.findByEmail(userDetails.getUsername()).orElseThrow();
+        User user = userRepository.findByEmail(userDetails.getUsername())
+                .orElseGet(() -> userRepository.findByEmail(email).orElseThrow());
         Set<String> roles = userDetails.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.toSet());
